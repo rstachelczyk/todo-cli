@@ -5,7 +5,6 @@ go 1.25.1
 require (
 	github.com/olekukonko/tablewriter v1.1.0
 	github.com/spf13/cobra v1.10.1
-	github.com/dustin/go-humanize v1.0.1
 )
 
 require (

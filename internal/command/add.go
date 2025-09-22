@@ -2,8 +2,10 @@ package command
 
 import (
 	"fmt"
+	"os"
 	"time"
 
+	"github.com/olekukonko/tablewriter"
 	"github.com/rstachelczyk/todo-cli/internal/todo"
 	"github.com/spf13/cobra"
 )
@@ -35,7 +37,7 @@ var addCmd = &cobra.Command{
 	Use:   "add",
 	Short: "Brief description of todo",
 	Long:  `Adding a todo`,
-	Args:  cobra.ExactArgs(1),
+	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		newTodos := []todo.Todo{}
 		for _, description := range args {
@@ -47,7 +49,11 @@ var addCmd = &cobra.Command{
 			fmt.Println(fmt.Errorf("%v", err))
 		}
 
-		fmt.Println("Added new todos")
+		fmt.Println("Added new todos:")
+		table := tablewriter.NewWriter(os.Stdout)
+		table.Header([]string{"DESCRIPTION", "PRIORITY", "COMPLETE BY", "DONE"})
+		table.Bulk(formatTodos(newTodos))
+		table.Render()
 	},
 }
 
@@ -56,9 +62,14 @@ func buildTodo(description string) todo.Todo {
 		Text:       description,
 		CreatedAt:  time.Now(),
 		Priority:   2,
-		CompleteBy: time.Now(),
+		CompleteBy: EndOfDay(),
 		Done:       done,
 	}
 	todo.SetPriority(priority)
 	return todo
+}
+
+func EndOfDay() time.Time {
+	now := time.Now()
+	return time.Date(now.Year(), now.Month(), now.Day(), 23, 59, 59, 0, now.Location())
 }

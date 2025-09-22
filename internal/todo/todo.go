@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"os"
 	"time"
-
-	"github.com/dustin/go-humanize"
 )
 
 type Todo struct {
@@ -26,11 +24,10 @@ type TodoView struct {
 
 func (t Todo) ToView() TodoView {
 	return TodoView{
-		Text:     t.Text,
-		Priority: humanizePriority(t.Priority),
-		Done:     map[bool]string{true: "X", false: ""}[t.Done],
-		// CompleteBy: humanizeDate(t.CompleteBy),
-		CompleteBy: humanize.Time(t.CompleteBy),
+		Text:       t.Text,
+		Priority:   humanizePriority(t.Priority),
+		Done:       map[bool]string{true: "X", false: ""}[t.Done],
+		CompleteBy: humanizeDate(t.CompleteBy),
 	}
 }
 
@@ -47,21 +44,29 @@ func humanizePriority(p int) string {
 }
 
 // helper for date formatting
-func humanizeDate(d time.Time) string {
+func humanizeDate(t time.Time) string {
 	now := time.Now()
-	today := now.Truncate(24 * time.Hour)
-	completeDay := d.Truncate(24 * time.Hour)
+	// To perform a day-only comparison, we must strip the time components.
+	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+	target := time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, t.Location())
 
-	switch completeDay.Sub(today) {
-	case 0:
+	// Calculate the difference in days.
+	diffDays := int(target.Sub(today).Hours() / 24)
+
+	switch {
+	case diffDays == 0:
 		return "Today"
-	case 24 * time.Hour:
+	case diffDays == 1:
 		return "Tomorrow"
-	case -24 * time.Hour:
+	case diffDays == -1:
 		return "Yesterday"
+	case diffDays > 1 && diffDays <= 7:
+		return fmt.Sprintf("%d days from now", diffDays)
+	case diffDays < -1 && diffDays >= -7:
+		return fmt.Sprintf("%d days ago", -diffDays)
 	default:
-		// TODO:Add local support?
-		return d.Format(time.DateOnly)
+		// For dates outside the 7-day range, fall back to a standard format.
+		return t.Format("1/2/06")
 	}
 }
 
