@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+// TODO: Add CompletedAt when I add `done` command
 type Todo struct {
 	Text       string    `json:"description"`
 	Priority   int       `json:"priority"`
@@ -80,24 +81,6 @@ func (todo *Todo) SetPriority(priority int) {
 		todo.Priority = 2
 	}
 }
-
-// func SaveTodos(filename string, todos []Todo) error {
-// 	jsonTodos, err := json.Marshal(todos)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	writeToFile(filename, []byte(string(jsonTodos)))
-// 	return nil
-// }
-
-// func writeToFile(filename string, data []byte) error {
-// 	permissions := os.FileMode(0644)
-// 	err := os.WriteFile(filename, data, permissions)
-// 	if err != nil {
-// 		log.Fatalf("Error saving todos: %v", err)
-// 	}
-// 	return nil
-// }
 
 func SaveTodos(filename string, newTodos []Todo) error {
 	var todos []Todo
