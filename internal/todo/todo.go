@@ -2,32 +2,33 @@ package todo
 
 import (
 	"encoding/json"
-	"github.com/dustin/go-humanize"
-	"log"
+	"fmt"
 	"os"
 	"time"
+
+	"github.com/dustin/go-humanize"
 )
 
 type Todo struct {
-	Text       string
-	Priority   int
-	CreatedAt  time.Time
-	CompleteBy time.Time
-	Completed  bool
+	Text       string    `json:"description"`
+	Priority   int       `json:"priority"`
+	CreatedAt  time.Time `json:"created_at"`
+	CompleteBy time.Time `json:"complete_by"`
+	Done       bool      `json:"done"`
 }
 
 type TodoView struct {
 	Text       string
 	Priority   string
 	CompleteBy string
-	Completed  string
+	Done       string
 }
 
 func (t Todo) ToView() TodoView {
 	return TodoView{
-		Text:      t.Text,
-		Priority:  humanizePriority(t.Priority),
-		Completed: map[bool]string{true: "✅", false: "❌"}[t.Completed],
+		Text:     t.Text,
+		Priority: humanizePriority(t.Priority),
+		Done:     map[bool]string{true: "X", false: ""}[t.Done],
 		// CompleteBy: humanizeDate(t.CompleteBy),
 		CompleteBy: humanize.Time(t.CompleteBy),
 	}
@@ -75,33 +76,60 @@ func (todo *Todo) SetPriority(priority int) {
 	}
 }
 
-func SaveTodos(filename string, todos []Todo) error {
-	jsonTodos, err := json.Marshal(todos)
+// func SaveTodos(filename string, todos []Todo) error {
+// 	jsonTodos, err := json.Marshal(todos)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	writeToFile(filename, []byte(string(jsonTodos)))
+// 	return nil
+// }
+
+// func writeToFile(filename string, data []byte) error {
+// 	permissions := os.FileMode(0644)
+// 	err := os.WriteFile(filename, data, permissions)
+// 	if err != nil {
+// 		log.Fatalf("Error saving todos: %v", err)
+// 	}
+// 	return nil
+// }
+
+func SaveTodos(filename string, newTodos []Todo) error {
+	var todos []Todo
+
+	// Read existing todos
+	data, err := os.ReadFile(filename)
+	if err == nil {
+		if len(data) > 0 {
+			if err := json.Unmarshal(data, &todos); err != nil {
+				return fmt.Errorf("failed to unmarshal existing todos: %w", err)
+			}
+		}
+	} else if !os.IsNotExist(err) {
+		return fmt.Errorf("failed to read file: %w", err)
+	}
+
+	// Append new todos
+	todos = append(todos, newTodos...)
+
+	// Marshal and write back
+	jsonTodos, err := json.MarshalIndent(todos, "", "  ")
 	if err != nil {
 		return err
 	}
-	writeToFile(filename, []byte(string(jsonTodos)))
-	return nil
-}
 
-func writeToFile(filename string, data []byte) error {
-	permissions := os.FileMode(0644)
-	err := os.WriteFile(filename, data, permissions)
-	if err != nil {
-		log.Fatalf("Error saving todos: %v", err)
-	}
-	return nil
+	return os.WriteFile(filename, jsonTodos, 0644)
 }
 
 func GetTodos(filename string) ([]Todo, error) {
 	bytes, err := os.ReadFile(filename)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	var todos []Todo
 	if err := json.Unmarshal(bytes, &todos); err != nil {
-		return todos, err
+		return nil, err
 	}
 
 	return todos, nil

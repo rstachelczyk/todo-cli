@@ -19,12 +19,19 @@ var listCmd = &cobra.Command{
 	Long:  `Display list of todos`,
 	Run: func(cmd *cobra.Command, args []string) {
 		todos, err := todo.GetTodos(dataFile)
+
 		if err != nil {
-			fmt.Errorf("%v", err)
+			if os.IsNotExist(err) {
+				fmt.Printf("You currently have no todos. \nAdd one with the `add` command to get started or specify the correct config file")
+			} else {
+				fmt.Printf("An unexpected error occurred while reading file: %v\n", err)
+			}
+			return
 		}
 
 		if len(todos) == 0 {
-			fmt.Println("You currently have no todos!")
+			fmt.Println("You currently have no todos. \nAdd one with the `add` command to get started!")
+			return
 		} else {
 			table := tablewriter.NewWriter(os.Stdout)
 			table.Header([]string{"DESCRIPTION", "PRIORITY", "COMPLETE BY", "DONE"})

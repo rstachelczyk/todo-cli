@@ -9,7 +9,7 @@ import (
 )
 
 var priority int
-var completed bool
+var done bool
 
 func init() {
 	rootCmd.AddCommand(addCmd)
@@ -23,11 +23,11 @@ func init() {
 	)
 
 	addCmd.Flags().BoolVarP(
-		&completed,
-		"completed",
-		"c",
+		&done,
+		"done",
+		"d",
 		false,
-		"Set as completed",
+		"Set as done",
 	)
 }
 
@@ -57,7 +57,7 @@ func buildTodo(description string) todo.Todo {
 		CreatedAt:  time.Now(),
 		Priority:   2,
 		CompleteBy: time.Now(),
-		Completed:  completed,
+		Done:       done,
 	}
 	todo.SetPriority(priority)
 	return todo
