@@ -13,6 +13,11 @@ func init() {
 	rootCmd.AddCommand(listCmd)
 }
 
+// TODO: Handle default list behavior (i.e fetch all uncompleted in past and 7 days in future?)
+// Order by priority?
+// Add bool flag to view completed
+// Add bool flag to view all (completed and uncompleted)
+// Add int flag to view by priority
 var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "Display list of todos",

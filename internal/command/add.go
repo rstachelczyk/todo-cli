@@ -12,6 +12,7 @@ import (
 
 var priority int
 var done bool
+var due int
 
 func init() {
 	rootCmd.AddCommand(addCmd)
@@ -24,12 +25,24 @@ func init() {
 		"Priority: 1 (High), 2 (Medium), 3 (Low)",
 	)
 
-	addCmd.Flags().BoolVarP(
+	addCmd.Flags().BoolVar(
 		&done,
 		"done",
-		"d",
 		false,
 		"Set as done",
+	)
+
+	addCmd.Flags().IntVar(
+		&due,
+		"due",
+		0,
+		`Set due date in number of days. (default 0)
+		...
+         -1 = yesterday 
+          0 = today 
+          1 = tomorrow
+		...
+		`,
 	)
 }
 
@@ -62,7 +75,7 @@ func buildTodo(description string) todo.Todo {
 		Text:       description,
 		CreatedAt:  time.Now(),
 		Priority:   2,
-		CompleteBy: EndOfDay(),
+		CompleteBy: EndOfDay().AddDate(0, 0, due),
 		Done:       done,
 	}
 	todo.SetPriority(priority)
